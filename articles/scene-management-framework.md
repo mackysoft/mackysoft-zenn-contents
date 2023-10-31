@@ -4,7 +4,7 @@ emoji: "📚"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["unity", "設計", "シーン管理", "ゲーム開発"]
 published: true
-published_at: 2023-11-01 12:00
+published_at: 2023-11-02 12:00
 ---
 
 ## はじめに
