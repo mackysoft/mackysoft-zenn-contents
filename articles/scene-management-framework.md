@@ -129,6 +129,12 @@ public sealed class TitleSceneEntryPoint : SceneEntryPointBase
 `MonoBehaviour`の継承に依存しない実装方法については、[「依存性注入との統合」](#依存性注入との統合)セクションを参照してください。
 :::
 
+SceneEntryPointコンポーネントを定義したら、シーンに1つ配置します。
+
+![](https://storage.googleapis.com/zenn-user-upload/6e9ebbecfc2f-20231031.png)
+
+あとはこのシーンを実行すれば、`TitleSceneEntryPoint`の起動時イベントが呼び出されます。
+
 以下は`SceneEntryPoint`のイベントの一覧です。
 
 ```cs:ISceneEntryPoint.cs
