@@ -777,9 +777,8 @@ public sealed class MyProjectScopedSceneEntryPoint : ScopedSceneEntryPoint
 『Navigathena』は「Navigation」に、知略の神様である「Athena」を合わせた造語で、「画面遷移に知略を与える」というコンセプトを持っています。神様の名前を冠するだけあって、設計には時間を要していました。
 
 業務や個人開発を平行しながら、類似事例を調べたりしてライブラリの設計を考えていましたが、ようやく納得できる形で一つの答えを出せたかと思います。
-ゲーム開発者としてこれからの開発でも使っていくので、使っていて気になった機能の改良を随時加えていく所存です。
 
-NavigathenaはMITライセンスの下で公開してあります。
+NavigathenaはMITライセンスの下で公開してあります。ゲーム開発者としてこれからの開発でも使っていくので、使っていて気になった機能の改良を随時加えていく所存です。
 
 https://github.com/mackysoft/Navigathena
 
