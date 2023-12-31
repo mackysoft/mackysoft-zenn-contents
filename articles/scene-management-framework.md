@@ -206,52 +206,101 @@ public interface ITransitionHandle
 
 この`ITransitionDirector`および`ITransitionHandle`を基に拡張を行うことで、独自の遷移演出を制御できます。
 
-以下は、シンプルなフェードによる遷移演出を実現する`SimpleTransitionDirector`の実装例です。
+以下は、シンプルなフェードによる遷移演出を実現する`SimpleLoadingTransitionDirector`の実装例です。
 
-```cs:SimpleTransitionDirector.cs
-public sealed class SimpleTransitionDirector : ITransitionDirector
+```cs:SimpleLoadingTransitionDirector.cs
+public sealed class SimpleLoadingTransitionDirectorBehaviour : MonoBehaviour
 {
 
-  readonly CanvasGroup m_CanvasGroup;
+	[SerializeField]
+	float m_FadeDuration = 0.5f;
 
-  public SimpleTransitionDirector (CanvasGroup canvasGroup)
-  {
-    m_CanvasGroup = canvasGroup;
-  }
+	[SerializeField]
+	Ease m_FadeEase = Ease.OutCubic;
 
-  public ITransitionHandle Create ()
-  {
-    return new SimpleTransitionHandle(m_CanvasGroup);
-  }
+	[SerializeField]
+	CanvasGroup m_CanvasGroup;
 
-  sealed class SimpleTransitionHandle : ITransitionHandle
-  {
+	public UniTask StartTransition (CancellationToken cancellationToken = default)
+	{
+		return m_CanvasGroup.DOFade(1f, m_FadeDuration)
+			.SetEase(m_FadeEase)
+			.ToUniTask(cancellationToken: cancellationToken);
+	}
+  
+	public UniTask EndTransition (CancellationToken cancellationToken = default)
+	{
+		return m_CanvasGroup.DOFade(0f, m_FadeDuration)
+			.SetEase(m_FadeEase)
+			.ToUniTask(cancellationToken: cancellationToken);
+	}
+}
 
-    readonly CanvasGroup m_CanvasGroup;
+public sealed class SimpleLoadingTransitionDirector : ITransitionDirector
+{
 
-    public SimpleTransitionHandle (CanvasGroup canvasGroup)
-    {
-      m_CanvasGroup = canvasGroup;
-    }
+	readonly ISceneIdentifier m_SceneInfo;
 
-    public async UniTask Start (CancellationToken cancellationToken = default)
-    {
-      // DOTweenでフェードインを実行
-      await m_CanvasGroup.DOFade(1f, 1f).ToUniTask(cancellationToken: cancellationToken);
-    }
+	public SimpleLoadingTransitionDirector (ISceneIdentifier sceneInfo)
+	{
+		m_SceneInfo = sceneInfo;
+	}
 
-    public async UniTask End (CancellationToken cancellationToken = default)
-    {
-      await m_CanvasGroup.DOFade(0f, 1f).ToUniTask(cancellationToken: cancellationToken);
-    }
-  }
+	public ITransitionHandle CreateHandle ()
+	{
+		return new SimpleLoadingTransitionDirectorHandle(m_SceneInfo);
+	}
+
+	class SimpleLoadingTransitionDirectorHandle : ITransitionHandle
+	{
+
+		readonly ISceneIdentifier m_SceneInfo;
+		ISceneHandle m_SceneHandle;
+		SimpleLoadingTransitionDirectorBehaviour m_Director;
+
+		public SimpleLoadingTransitionDirectorHandle (ISceneIdentifier sceneInfo)
+		{
+			m_SceneInfo = sceneInfo;
+		}
+
+		public async UniTask Start (CancellationToken cancellationToken = default)
+		{
+			var handle = m_SceneInfo.CreateHandle();
+			Scene scene = await handle.Load(cancellationToken: cancellationToken);
+			if (!scene.TryGetComponentInScene(out m_Director, true))
+			{
+				throw new InvalidOperationException($"Scene '{scene.name}' does not have a {nameof(SimpleLoadingTransitionDirectorBehaviour)} component.");
+			}
+
+			m_SceneHandle = handle;
+
+			await m_Director.StartTransition(cancellationToken);
+		}
+
+		public async UniTask End (CancellationToken cancellationToken = default)
+		{
+			await m_Director.EndTransition(cancellationToken);
+			m_Director = null;
+
+			await m_SceneHandle.Unload(cancellationToken: cancellationToken);
+			m_SceneHandle = null;
+		}
+	}
 }
 ```
 
 ```cs
-// SimpleTransitionDirectorで演出を実行しつつ、新たなシーンをロードする
-await GlobalSceneNavigator.Instance.Push(new BuiltInSceneIdentifier("MyScene"), new SimpleTransitionDirector(m_CanvasGroup));
+// SimpleLoadingTransitionDirectorで演出を実行しつつ、新たなシーンをロードする
+await GlobalSceneNavigator.Instance.Push(new BuiltInSceneIdentifier("MyScene"), new SimpleLoadingTransitionDirector(new BuiltInSceneIdentifier("Loading")));
 ```
+
+`ITransitionDirector` はシーンの履歴と共に管理されるため、`Pop`の遷移操作による復帰時にも同じ演出が実行されます。
+
+:::message
+履歴機能による演出の発火では、新しいシーンをロードしたり、シングルトンを活用するなどして、遷移演出用のオブジェクトが利用可能な状態にしておく必要があります。
+:::
+
+```cs
 
 ### 遷移中のプログレス表示
 
@@ -259,7 +308,7 @@ await GlobalSceneNavigator.Instance.Push(new BuiltInSceneIdentifier("MyScene"), 
 
 Navigathenaでは、遷移演出中には`IProgress<IProgressDataStore>`をを介し、任意のデータ型を渡すことが可能です。遷移演出中に挟まれる処理（`ISceneEntryPoint.OnInitialize`/`OnFinalize`、`IAsyncOperation.ExecuteAsync`）には、`IProgress<IProgressDataStore>`が渡されます。各イベント内で`IProgressDataStore`にデータを書き込み、`IProgress<IProgressDataStore>`に通知することで、遷移の進捗状況やメッセージなど、プレイヤーに提示したい情報を遷移演出に組み込むことができます。
 
-以下は、先ほどの`SimpleTransitionDirector`を拡張し、進捗表示に対応させる例です。
+以下は、進捗表示に対応した`SimpleProgressTransitionDirector`の実装例です。
 
 ```cs:MyProgressData.cs
 // プログレス情報として使用したい任意のデータ型を定義する
@@ -277,8 +326,8 @@ public readonly struct MyProgressData
 }
 ```
 
-```cs:SimpleTransitionDirector.cs
-public sealed class SimpleTransitionDirector : ITransitionDirector
+```cs:SimpleProgressTransitionDirector.cs
+public sealed class SimpleProgressTransitionDirector : ITransitionDirector
 {
 
   readonly CanvasGroup m_CanvasGroup;
@@ -296,11 +345,11 @@ public sealed class SimpleTransitionDirector : ITransitionDirector
 
   public ITransitionHandle Create ()
   {
-    return new SimpleTransitionHandle(m_CanvasGroup, m_ProgressText, m_MessageText, m_ProgressSlider);
+    return new SimpleProgressTransitionHandle(m_CanvasGroup, m_ProgressText, m_MessageText, m_ProgressSlider);
   }
 
   // IProgress<IProgressDataStore>を実装することで、遷移演出中にプログレス情報を受け取ることができる
-  sealed class SimpleTransitionHandle : ITransitionHandle, IProgress<IProgressDataStore>
+  sealed class SimpleProgressTransitionHandle : ITransitionHandle, IProgress<IProgressDataStore>
   {
 
     readonly CanvasGroup m_CanvasGroup;
@@ -341,14 +390,14 @@ public sealed class SimpleTransitionDirector : ITransitionDirector
 ```
 
 ```cs
-// 遷移操作時にSimpleTransitionDirectorを渡す
-await GlobalSceneNavigator.Instance.Push(new BuiltInSceneIdentifier("MyScene"), new SimpleTransitionDirector(m_CanvasGroup, m_ProgressText, m_MessageText, m_ProgressSlider));
+// 遷移操作時にSimpleProgressTransitionDirectorを渡す
+await GlobalSceneNavigator.Instance.Push(new BuiltInSceneIdentifier("MyScene"), new SimpleProgressTransitionDirector(m_CanvasGroup, m_ProgressText, m_MessageText, m_ProgressSlider));
 ```
 
 ```cs:MySceneEntryPoint.cs
 // ...
 
-// progressに通知を行うと、SimpleTransitionDirectorまで通知される
+// progressに通知を行うと、SimpleProgressTransitionDirectorまで通知される
 protected override UniTask OnInitialize (ISceneDataReader reader, IProgress<IProgressDataStore> progress, CancellationToken cancellationToken)
 {
   ProgressDataStore<MyProgressData> store = new();
