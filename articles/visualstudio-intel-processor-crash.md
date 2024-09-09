@@ -2,7 +2,7 @@
 title: "【対策】CPU起因でVisualStudioがクラッシュおよびエラーを吐く可能性への対策について"
 emoji: ":desktop_computer:"
 type: "tech"
-topics: ["visualstudio"]
+topics: ["visualstudio", "Intel"]
 published: false
 #published_at: 2024-09-12 12:00
 ---
