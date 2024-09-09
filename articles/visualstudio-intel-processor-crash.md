@@ -2,7 +2,7 @@
 title: "【対策】CPU起因でVisualStudioがクラッシュおよびエラーを吐く可能性への対策について"
 emoji: "🖥️"
 type: "tech"
-topics: ["visualstudio", "Intel"]
+topics: ["visualstudio", "intel"]
 published: false
 #published_at: 2024-09-12 12:00
 ---
@@ -94,7 +94,7 @@ XTUでPerformance Core Ratioを下げる。RADの報告ではx55~x53辺りまで
 
 以上で、VisualStudioのクラッシュ対策は完了である。
 
-## 現時点で
+## 現時点での状態
 
 XTUでの対応から１週間経った現時点では、今までのようなエラーは発生しておらず、VisualStudioで快適に開発を続けられている。
 特に、今まではVisualStudioの起動時とコンパイル時にかなり激しくファンが回っていたのだが、対応以降は驚くほど静かである。
