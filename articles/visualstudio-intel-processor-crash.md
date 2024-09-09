@@ -40,7 +40,7 @@ published: false
 
 https://gigazine.net/news/20240227-intel-processor-game-app-crash/
 
-どうやら、Intel製のCPU起因によるアプリのクラッシュが報告されており、VisualStudioでも同様のクラッシュが確認されているという話である。
+どうやら、Intel製の一部のCPU起因によるアプリのクラッシュが報告されており、VisualStudioでも同様のクラッシュが確認されているという話である。
 
 > 問題は「Core i9 13900K」や「Core i9 14900K」を搭載したマシンで多く確認されているほか、その他のIntel製CPUを搭載したマシンでも同様の問題が発生する可能性があるとされています。
 
@@ -72,7 +72,7 @@ https://www.intel.com/content/www/us/en/download/17881/intel-extreme-tuning-util
 
 XTUを実行した後はポップアップが表示され、以下が求められるはずである。
 
-> Ensure you have the latest BIOS patch, latest Window update, and have Undervolt Protection enabled in BIOS
+> Ensure you have the latest BIOS patch, latest Windows update, and have Undervolt Protection enabled in BIOS
 
 最新アップデートは行われているものとして、あとはBIOSでUndervolt Protection（低電圧保護）を有効にする必要がある。
 
@@ -97,10 +97,10 @@ XTUでPerformance Core Ratioを下げる。RADの報告ではx55~x53辺りまで
 ## 現時点で
 
 XTUでの対応から１週間経った現時点では、今までのようなエラーは発生しておらず、VisualStudioで快適に開発を続けられている。
-
 特に、今まではVisualStudioの起動時とコンパイル時にかなり激しくファンが回っていたのだが、対応以降は驚くほど静かである。
 
-「コードベースが大規模なプロジェクトでのみエラーが発生する」という点とも辻褄が合うので、この対応は正しかったのかもしれない。
+そもそもの問題の発生のランダム性が強く、再現性に乏しいものであったことから、この対策によって完全に改善されたものかは断定できない。
+ただ「コードベースが大規模なプロジェクトでのみエラーが発生する」という点とも辻褄が合うので、この対応は正しかったと考えている。
 
 ## 参考
 
