@@ -78,7 +78,7 @@ XTUを実行した後はポップアップが表示され、以下が求めら�
 
 コンピュータのBIOSを起動し、検索ボックスなどから「Undervolt Protection」の項目を探してEnabledとする。
 
-![](https://storage.googleapis.com/zenn-user-upload/ba8b69263f4f-20240909.jpg)
+![](https://storage.googleapis.com/zenn-user-upload/dfa0a215733e-20240922.jpg)
 
 これでBIOSの設定は完了。
 
